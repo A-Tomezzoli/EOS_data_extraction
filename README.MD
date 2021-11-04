@@ -38,6 +38,13 @@ You just need to download or clone the project to use it. Just ensure that you a
 
 ## Features
 GUI_Mrk_Detection.m - Main file, used to load the DICOM files, identify the anatomical points, identify the skin markers and export/load data.
+-'Load DICOM’: press this button to load biplanar X-Ray radiographs.
+-‘Skin Markers’ automatically detect skin markers of 3 millimeters or more in diameter (‘Automatic detection’). 
+  You can then change their name using ‘Manual Labelling’.
+-‘Anatomical points’: fit a sphere to the hip or glenohumeral joint and get its diameter and its center coordinate. 
+  Get the coordinates of points from vertebrae in the sagittal plane.
+-'Clear figure' if needed. Data contained in Tables will stay.
+
 
 ## Dependencies
 * Needs the image processing toolbox of Matlab.

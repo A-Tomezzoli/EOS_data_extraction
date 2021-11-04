@@ -18,7 +18,7 @@
 % Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 % -------------------------------------------------------------------------
 
-function [HJC, r]= f_EOS_anatID_Hip_v3(Front,Sagit,side)
+function [HJC, r, y_hip_face]= f_EOS_anatID_Hip_v3(Front,Sagit,side)
 
 font_inst = 16;
 
@@ -27,19 +27,20 @@ font_inst = 16;
 [H,W] = size(Front);
     
 % 1.2 - Plot Pre-Zoomed Image 
-Yimg = 1:round(H/2);
+%Yimg = 1: round (H/2);                   %use this line to prezoom
+Yimg = 1:H;                                   
 fig = figure;
 img = imshow(Front(Yimg,:));
-set(fig,'units','normalized','outerposition',[0 0 1 1]);
+set(fig,'units','normalized','outerposition',[0.02 0 0.36 1]);        
 text(100, 100,'RIGHT','color',[1 1 1],'HorizontalAlignment','left')
 text(W - 100, 100,'LEFT','color',[1 1 1],'HorizontalAlignment','right')
 
-% 1.3 - Zoom on Hip
+% 1.3 - Zoom on Hip OR Gleno-Humeral joint
 switch side
-    case 'right'
-        title({'Select the zone around the Right Hip'},'FontSize',font_inst,'FontWeight','demi');
+    case 'right'                                        
+        title({'Select a zone     '},'FontSize',font_inst,'FontWeight','demi');
     case 'left'
-        title({'Select the zone around the Left Hip'},'FontSize',font_inst,'FontWeight','demi');
+        title({'Select a zone     '},'FontSize',font_inst,'FontWeight','demi');
 end
 [J,H,W] = f_subIMG(Front);
 
@@ -55,7 +56,7 @@ yy = [1 h];
 axis([xx yy]);
 
 % 1.6 - Get Points 
-title({'CLICK points on countour of the FEMORAL HEAD, press ENTER when finished'},...
+title({'CLICK on joint SURFACE points, then press ENTER'},...
        'FontSize',font_inst, 'FontWeight','demi');
     
 cond1 = 'No';    
@@ -73,9 +74,9 @@ while strcmp(cond1,'No')% Multiple tries if needed
 end
     
 % 1.7 - Points in Coordinate system EOS
-x_hip    = x_hip   +W;
-y_hip(1) = y_hip(1)+H;
-
+x_hip    = x_hip   + W;
+y_hip(1) = y_hip(1)+ H;  
+y_hip_face = y_hip(1)  ;                                     %%AT add on main figure
 
 %% 2 - Sagittal View  
 % 2.1 - Height and Width of Image
@@ -88,18 +89,18 @@ img.CData = Sagit(Yimg,:); hold on
 xx = [1 w];
 yy = [1 h];
 axis([xx yy]);
-% Plot height of the hip identified on Frontal view
+% Plot height of the hip OR Gleno-Humeral joint identified on Frontal view
 plot(xlim,[y_hip(1)+r_hip(1), y_hip(1)+r_hip(1)],'c')
 plot(xlim,[y_hip(1)-r_hip(1), y_hip(1)-r_hip(1)],'c')
 text(100, 100,'FRONT','color',[1 1 1],'HorizontalAlignment','left')
 text(W - 100, 100,'BACK','color',[1 1 1],'HorizontalAlignment','right')
 
-% 2.3 - Zoom on Hip    
+% 2.3 - Zoom on Hip OR Gleno-Humeral joint
 switch side
-    case 'right'
-        title({'Select the zone around the Right Hip'},'FontSize',font_inst,'FontWeight','demi');
+    case 'right'                                                             
+        title({'Select a zone         '},'FontSize',font_inst,'FontWeight','demi');
     case 'left'
-        title({'Select the zone around the Left Hip'},'FontSize',font_inst,'FontWeight','demi');
+        title({'Select a zone         '},'FontSize',font_inst,'FontWeight','demi');
 end
 [J,H,W] = f_subIMG(Sagit);
 
@@ -118,8 +119,8 @@ y_tmp = y_hip(1) - H;
 plot(xlim,[y_tmp+r_hip(1), y_tmp+r_hip(1)],'c')
 plot(xlim,[y_tmp-r_hip(1), y_tmp-r_hip(1)],'c')
 
-% 2.6 - Get Points 
-title({'CLICK points on countour of the FEMORAL HEAD, press ENTER when finished'},...
+% 2.6 - Get Points                                                          
+title({'CLICK on joint SURFACE points, then press ENTER'},...
        'FontSize',font_inst, 'FontWeight','demi');
     
 cond1 = 'No';    
@@ -136,7 +137,7 @@ while strcmp(cond1,'No')% Multiple tries if needed
     delete(fig.Children.Children(1:3))
 end
 
-% 1.7 - Points in Coordinate system EOS
+% 2.7 - Points in Coordinate system EOS
 z_hip   = z_hip    + W;
 y_hip(2)= y_hip(2) + H;    
 

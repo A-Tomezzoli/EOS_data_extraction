@@ -75,7 +75,7 @@ function [mrk] = f_EOS_mrkID_T(IMG,fig,r_cut)
         %should be equal if perfect circle, 20% difference is acceptable
         tmp1 = MinorAxisLength./MajorAxisLength;
         tmp2 = find(tmp1>0.8);
-        tmp3 = find(MinorAxisLength(tmp2)>8); % 8px arbitrary
+        tmp3 = find(MinorAxisLength(tmp2)> 8); % 8px arbitrary
         mrk = round(local_centre(tmp2(tmp3),:));
         
         % RMK: moving windows is ok but at the moment does not get all

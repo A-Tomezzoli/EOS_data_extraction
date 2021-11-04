@@ -24,7 +24,7 @@ function [mrk_out, l] = f_EOS_mrkID_H(IMG,mrk_in,test_fig)
 mrk_out = [];
 
 n_mrk = size(mrk_in,1);
-dy2 = 15; % band size
+dy2 = 25; % band size          %changed from 15 to 25 to avoid bugs. Bug if set at 30
 
 [hIMG, wIMG] = size(IMG); % Height & Width IMG
 
@@ -80,10 +80,10 @@ for i = 1:n_mrk
                 % Get marker closer to the center
                 % Put y position in a vector
 
-                for i = 1:n_mrk
-                    tmp(i) = rp(i).Centroid(2) - dy2;
-                    bboxY(i) = rp(i).BoundingBox(2);
-                    bboxH(i) = rp(i).BoundingBox(4);
+                for j = 1:n_mrk                          
+                    tmp(j) = rp(j).Centroid(2) - dy2;
+                    bboxY(j) = rp(j).BoundingBox(2);
+                    bboxH(j) = rp(j).BoundingBox(4);
                 end
                 % Centre of the box
                 tmp2 = [bboxY; bboxY + bboxH];

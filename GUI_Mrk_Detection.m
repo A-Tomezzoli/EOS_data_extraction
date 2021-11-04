@@ -21,6 +21,35 @@
 % Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 % -------------------------------------------------------------------------
 
+
+% Author     :   A. Tomezzoli, https://orcid.org/0000-0003-0751-5552 
+%                Biomechanics and Impact Mechanics Laboratory (LBMC)
+%                Univ Lyon, Univ Gustave Eiffel, , LBMC UMR_T9406, F69622, Lyon, France
+%                https://lbmc.univ-gustave-eiffel.fr             
+% Date       :   August 2021
+% -------------------------------------------------------------------------
+% Description:   Mains changes: the Toolbox has been adapted to extract multiple data at
+%                the upper limb and spine.        
+%               - 'Automatic detection' panel
+%                       'Add/Remove points': new button. Adds the possibility of removing points
+%                       from automatic / manual detection. Points can be
+%                       added without any previous automatic point
+%                       detection.
+%                       'Manual labelling': a dropdown list of predefined marker labels has been
+%                       added. See the list below.
+%                - 'Anatomical points' panel
+%                       'Vertebr_corner': new button. Adds the possibility of extracting
+%                        manually a set 2D points in the sagittal plane.
+%                        Their number and labels are defined below.
+%                       'Others': new button. Add the possibility of extracting manually 
+%                        zero to 9 additional 3D points.  
+%                        Knee and Pubic symphysis detection have been
+%                        removed.
+%                - 'Clear figure' button: clears all points plotted on figures.Data 
+%                        is kept in tables. 
+% -------------------------------------------------------------------------
+
+
 function varargout = GUI_Mrk_Detection(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -43,6 +72,8 @@ end
 
 end
 
+
+
 % --- Executes just before GUI_Mrk_Detection is made visible.
 function GUI_Mrk_Detection_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -57,7 +88,7 @@ addpath('toolbox_Mrk_Detection')
 handles.output = hObject;
 
 % Update handles structure
-guidata(hObject, handles);
+guidata(hObject, handles);            
 if nargin == 3
     initial_dir = pwd;
 elseif nargin > 4
@@ -97,8 +128,12 @@ global dir_path files Front Sagit AnatPt Info
 AnatPt = [];
 % Initialise tables
 set(handles.Table_SkinMrk,'Data',[])
+set(handles.Table_SkinMrk,'RowName',[])
 set(handles.Table_AnatPt,'Data',[])
-for i =1:24; R{i} = ['Mrk',num2str(i)];end
+
+
+
+for i =1:45; R{i} = ['Mrk',num2str(i)];end                 
 set(handles.Table_SkinMrk,'RowName',R)
 
 cla(handles.axes3)
@@ -130,14 +165,17 @@ if size(files,2) == 2
     r = size(Sagit,2)/ 5;
     hold on;
     font = 16;
-    quiver(1,1,r,0,'linewidth',2,'color','r','MaxHeadSize',2); text(r/3,r/8,'x','color','r','FontSize',font) % X
-    quiver(1,1,0,r,'linewidth',2,'color','g','MaxHeadSize',2); text(r/8,3*r/5,'y','color','g','FontSize',font) % Y
-    quiver(W + 1,1,r,0,'linewidth',2,'color','b','MaxHeadSize',2); text(W + r/3,r/8,'z','color','b','FontSize',font) % Z
-    quiver(W + 1,1,0,r,'linewidth',2,'color','g','MaxHeadSize',2); text(W + r/8,3*r/5,'y','color','g','FontSize',font) % Y
+    quiver(40,40,r,0,'linewidth',2,'color','r','MaxHeadSize',2); text(r/2,r/4,'x','color','r','FontSize',font) % X
+    quiver(40,40,0,r,'linewidth',2,'color','g','MaxHeadSize',2); text(r/4,3*r/5,'y','color','g','FontSize',font) % Y
+    quiver(W + 40,40,r,0,'linewidth',3,'color','g','MaxHeadSize',2); text(W + r/2,r/4,'z','color','g','FontSize', font, 'FontWeight', 'bold') % Z
+     quiver(W + 40,40,r,0,'linewidth',2,'color','b','MaxHeadSize',2); text(W + r/2,r/4,'z','color','b','FontSize',font) % Z   
+    quiver(W + 40,40,0,r,'linewidth',2,'color','g','MaxHeadSize',2); text(W + r/4,3*r/5,'y','color','g','FontSize',font) % Y
 else 
     msgbox('Select the FRONTAL and SAGITTAL files')
 end
 end
+
+
 
 %% Skin Markers Detection
 % --- Executes on button press in SkinMrk.
@@ -148,10 +186,9 @@ function SkinMrk_Callback(hObject, eventdata, handles)
 global Front Sagit Info
 
 r_cut = str2double(handles.r_cut.String); % add selection in GUI
-
 test_fig = 'off'; % on / off
- 
-% Clear Markers in Figure 
+          
+% Clear Markers in Figure      
 axes(handles.axes3)
 h_tmp = findobj('type','line'); % Find Markers on plot
 delete(h_tmp(:));               % Delete Markers on plot
@@ -163,6 +200,7 @@ end
 set(handles.Table_SkinMrk,'RowName',Row)
 set(handles.Table_SkinMrk,'Data',[])
 
+
 [mrk_eos,mrk_eos2] = f_EOS_mrkID(Front,Sagit,r_cut,test_fig);
 
 % Plot MRK -> In Fig GUI
@@ -173,9 +211,9 @@ hold on
     y = mrk_eos(:,2);
     z = mrk_eos(:,3);
 % Front view (X,Y)
-    plot(x,y,'*g','MarkerSize',5)
-% Lateral view (Z,Y)
-    plot(z + xdim,y,'*g','MarkerSize',5)
+    plot(x,y,'ro','MarkerSize', 8)                 
+% Lateral view (Z,Y)              
+    plot(z + xdim,y,'ro','MarkerSize',8)               
     
 % Markers identified on side view
 if exist('mrk_eos2')
@@ -185,10 +223,10 @@ if exist('mrk_eos2')
         y = mrk_eos2(:,2);
         z = mrk_eos2(:,3);
     % Front view (X,Y)
-        plot(x,y,'*r','MarkerSize',5)
-    % Lateral view (Z,Y)
-        plot(z + xdim,y,'*r','MarkerSize',5)
-    end
+        plot(x,       y, 'mo', 'MarkerSize', 8)                    
+    % Lateral view (Z,Y)             
+        plot(z + xdim,y, 'mo', 'MarkerSize', 8)           
+     end
 end
 
 % Fill Marker Table with values
@@ -197,10 +235,32 @@ px2mm = Info.Sagit.PixelSpacing (1);
 mrk_eos_mm = mrk_eos * px2mm; % EOS to mm
 set(handles.Table_SkinMrk,'Data',mrk_eos_mm);
 
-% Missing Data?
-% Are there missing markers? no -> do nothing, yes -> next step
-cond1 = questdlg('Are there unidentified markers?');
-if strcmp(cond1,'Yes')
+end
+
+
+
+% --- Executes on button press in add_SkinMrk.
+function add_SkinMrk_Callback(hObject, eventdata, handles)
+% hObject    handle to add_SkinMrk (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Front Sagit Info
+
+% get variables from "Automatic detection" and main interface
+axes(handles.axes3)
+xdim = size(Front,2);
+mrk_eos = [];
+n_mrk_previous = length(handles.Table_SkinMrk.Data);
+mrk_eos_mm = handles.Table_SkinMrk.Data;
+
+px2mm = Info.Sagit.PixelSpacing (1);
+r_cut = str2double(handles.r_cut.String); % add selection in GUI
+cpt = 1;
+subBand = [];
+cond1_new = [];
+
+% Are there missing (OR spurious) markers? no -> do nothing, yes -> next step     
+cond1 = 'Yes';
     % 1 - Plot Frontal view with small black band on sides to see markers at edge
         % 1.1 - Add black band to see markers at the edge
         dimY = size(Front,1); 
@@ -208,153 +268,304 @@ if strcmp(cond1,'Yes')
         tmpIMG = [zeros(dimY,dx),Front,zeros(dimY,dx)];
         % 1.2 - Height and Width boundaries of image - for rectangle
         [HB,WB] = size(tmpIMG); 
-        % 1.3 - Plot frontal view
-        select_mrk = figure; imshow(tmpIMG); hold on;
-        set(select_mrk,'units','normalized','outerposition',[0 0 1 1]);
+        
+    while strcmp(cond1,'Yes'); % ask question after each mrk. 'No' -> close fig1      
+        % 1.3 update the main figure display
+        % Clear Markers in Figure      
+        axes(handles.axes3)
+        h_tmp = findobj('type','line'); % Find Markers on plot
+        delete(h_tmp(:));               % Delete Markers on plot
+        
+        
+        % Add Markers of different colors
+        
+               
+        if length (mrk_eos_mm) <6   &   length (mrk_eos_mm) >1   %1 color if < 6 markers
+            x_newPlot = mrk_eos_mm(:,1)/px2mm;
+            y_newPlot  = mrk_eos_mm(:,2)/px2mm;
+            z_newPlot  = mrk_eos_mm(:,3)/px2mm;
+            % Front view (X,Y)
+                plot(x_newPlot ,y_newPlot , 'ro','MarkerSize', 8)          
+            % Lateral view (Z,Y)
+                plot(z_newPlot  + xdim, y_newPlot , 'ro','MarkerSize',8) 
+                
+        elseif  length (mrk_eos_mm) > 7                           % different colors if they are more markers
+                for mrk_ligne= 1:length (mrk_eos_mm);
+                    x_newPlot = mrk_eos_mm(mrk_ligne,1)/px2mm;
+                    y_newPlot  = mrk_eos_mm(mrk_ligne,2)/px2mm;
+                    z_newPlot  = mrk_eos_mm(mrk_ligne,3)/px2mm;  
+                    
+                    %set the color
+                    if mrk_ligne/5 - fix (mrk_ligne/5) == 0
+                            col_shape = 'ro';                
+                    elseif (mrk_ligne+1)/5 - fix ((mrk_ligne+1)/5) == 0
+                            col_shape = 'go';    
+                    else
+                        if (mrk_ligne+2)/5 - fix ((mrk_ligne+2)/5) == 0
+                            col_shape = 'yo'; 
+                        elseif (mrk_ligne+3)/5 - fix ((mrk_ligne+3)/5) == 0
+                            col_shape = 'co'; 
+                        else
+                            col_shape = 'mo'; 
+                        end
+                    end
+                    % Front view (X,Y)
+                        plot(x_newPlot ,y_newPlot , col_shape,'MarkerSize', 8)        
+                    % Lateral view (Z,Y)
+                        plot(z_newPlot  + xdim, y_newPlot ,col_shape,'MarkerSize',8)   
+                end
+        else
+        end
+  
+           
+        % 1.3 - Plot New frontal view
+        select_mrk = figure(1); imshow(tmpIMG); hold on;...
+        scr_size = get(groot,'ScreenSize');                                                
+        set(select_mrk,'units','normalized','outerposition',[0.05*scr_size(1) 0 0.37*scr_size(1) 1]);     
         % 1.4 - Plot markers identified
-        plot(mrk_eos(:,1)+dx,mrk_eos(:,2),'+g','MarkerSize',5)
-        title('Select Zone Around the Mrk')
-        %
-    n_mrk = size(mrk_eos,1);
-    cpt = 0;
-    while strcmp(cond1,'Yes') % ask question after each mrk
-    
-    % 2 - Select unidentified Marker on Frontal View
+        mrk_eos_previous = mrk_eos_mm /px2mm;
+        if mrk_eos_previous >0
+            plot(mrk_eos_previous(:,1)+ dx, mrk_eos_previous(:,2),'+g','MarkerSize',5)
+        else
+        end
+            title('Select Zone Around the Mrk')
+        
+        % 2 - Select unidentified (OR spurious) Marker on Frontal View
         % 2.1 - Manual ID of Rectangle around marker 
         clear mrk_tmp
-        figure(select_mrk.Number)
-        cpt = cpt +1;
+        figure(select_mrk.Number);                             
         [subIMG,h,w] = f_subIMG(tmpIMG);
+        %visualise selection on the image                                
+        line([w, w+size(subIMG,2)],                 [h, h], 'Color','red')                      
+        line([w, w+size(subIMG,2)],                 [h+size(subIMG,1), h+size(subIMG,1)], 'Color','red') 
+        line([w, w],                                [h, h+size(subIMG,1)], 'Color','red') 
+        line([w+size(subIMG,2), w+size(subIMG,2)],	[h, h+size(subIMG,1)], 'Color','red') 
+     
         
         % 2.2 - ID mrk with threshold on sub image
-        r_cut2 = 0.9;
-        local_mrk(cpt,:) = f_EOS_mrkID_subT(subIMG,r_cut2);
+        if size(subIMG, 1) < 15  |    size (subIMG, 2) < 15  % if the selection area is too small: avoid bug
+                                                                
+        else  
+            r_cut2 = 0.9;    
+            local_mrk = [];
+            local_mrk(cpt,:) = f_EOS_mrkID_subT(subIMG,r_cut2);    
+            newmrk_index = [] ; newmrk  = [];
+            
+                % >> TO DO -- Need to add mrk that were previously identified
+                                    
+                % 2.3.1 - Check visually if it worked  
+               fig2 = figure(2); 
+               fig2.Position = [scr_size(3)*3/5  scr_size(4)  3*size(subIMG,2) 3*size(subIMG,1)];
+               imshow(subIMG); hold on;  
+               % Successful? Y/N
+               if  local_mrk(cpt,:) ~= local_mrk(cpt,:)  % to detect NaN (because NaN ~= NaN)
+                   cond2 = 'No';
+               else
+                   plot(local_mrk(cpt,1),local_mrk(cpt,2),'*r');
+                   
+                   cond2 = questdlg('Was the marker identified properly?');
+                   % 2.4 - Get Mrk X and Y Position in Global
+                   mrk_tmp(cpt,1:2) = round([local_mrk(cpt,1) + round(w) - dx,...
+                       local_mrk(cpt,2) + round(h)]); 
+               end
+               close;
+               
+            % 2.3 - Is this New Marker?
+            % marker is not new if it is within a box of 10px in X and Y around other mrk  
+         if length (mrk_eos_mm)>0
+            if  local_mrk(cpt,:) ~= local_mrk(cpt,:)  | strcmp (cond2, 'No') |strcmp (cond2, 'Cancel')
+            else
+                x_remove = [mrk_tmp(cpt,1) - 10, mrk_tmp(cpt,1) + 10];
+                y_remove = [mrk_tmp(cpt,2) - 10, mrk_tmp(cpt,2) + 10];
+
+                newmrk_index = find(mrk_eos_mm(:,1)> x_remove(1)*px2mm & mrk_eos_mm(:,1)< x_remove(2)*px2mm  ...
+                        & mrk_eos_mm(:,2)> y_remove(1)*px2mm & mrk_eos_mm(:,2)< y_remove(2)*px2mm);
+
+                if isempty(newmrk_index) % New Marker   
+                else
+                    newmrk = mrk_eos_mm(newmrk_index(1), :)/ px2mm;
+                    %plot in frontal(Figure 1) and lateral (Figure 2) views
+                    axes(handles.axes3)
+                    plot(newmrk(1,1),newmrk(1,2),'go','MarkerSize', 10); 
+                    plot(newmrk(1,3) + xdim, newmrk(1,2),'go','MarkerSize',10);      
+                    
+                    %Question => 'Remove, Add, or 'Cancel'.
+                    % => 'Cancel': end of the function. 'Yes': continue. 'No': remove marker from table
+                    cond1_new = questdlg('This marker was already listed', '', 'Remove', 'Add another', 'Cancel', 'Cancel');
+                    if strcmp(cond1_new,'Remove')
+                        %Update and close the figure
+                        mrk_eos_mm(newmrk_index(1), :) = [0, 0, 0];
+                        set(handles.Table_SkinMrk,'Data',mrk_eos_mm);
+                        close (select_mrk)
+                    elseif strcmp(cond1_new,'Add another')
+                    else % 'Cancel'
+                        close (select_mrk)                   
+                    end
+                end
+            end
+         else
+         end
         
-            % >> TO DO -- Need to add mrk that were previously identified
-            % on subIMG, happens at times <<
-            
-            % 2.3.1 - Check visually if it worked
-            figure; imshow(subIMG); hold on; 
-            plot(local_mrk(cpt,1),local_mrk(cpt,2),'*r')
-            % Successful? Y/N
-            cond2 = questdlg('Was the marker identified properly?');
-            close
-            
-        % 2.4 - Get Mrk X and Y Position in Global
-            mrk_tmp(cpt,1:2) = round([local_mrk(cpt,1) + round(w) - dx,...
-                               local_mrk(cpt,2) + round(h)]); 
-            
-        % 2.5 - Is this New Marker?
-        % marker is not new if it is within a box of 10px in X and Y around other mrk
-        x = [mrk_tmp(cpt,1) - 10, mrk_tmp(cpt,1) + 10];
-        y = [mrk_tmp(cpt,2) - 10, mrk_tmp(cpt,2) + 10];
+        % 3.3 - Update Figures and close the function
+        if strcmp(cond1_new,'Add another') | isempty(newmrk_index)
+        else    
+            %update the main figure display
+            % Clear Markers in Figure      
+            axes(handles.axes3)
+            h_tmp = findobj('type','line'); % Find Markers on plot
+            delete(h_tmp(:));               % Delete Markers on plot
+            % Add Markers
+                x_newPlot = mrk_eos_mm(:,1)/px2mm;
+                y_newPlot  = mrk_eos_mm(:,2)/px2mm;
+                z_newPlot  = mrk_eos_mm(:,3)/px2mm;
+            % Front view (X,Y)
+                plot(x_newPlot ,y_newPlot ,'ro','MarkerSize', 8)          
+            % Lateral view (Z,Y)
+                plot(z_newPlot  + xdim, y_newPlot ,'ro','MarkerSize',8) 
+            break
+        end
+               
         
-        newmrk = find(mrk_eos(:,1)> x(1) & mrk_eos(:,1)< x(2)  ...
-                  & mrk_eos(:,2)> y(1) & mrk_eos(:,2)< y(2));
-        
-        if isempty(newmrk) % New Marker
-            
     % 3 - Get Marker Position on Lateral View (If Work)
-            if strcmp(cond2,'Yes')
+            if strcmp(cond2,'Yes')             
                 clear mrk_band
                 % 3.1 - Try Band - Add Height constraint on Lat view
                 [mrk_eos3,band] = f_EOS_mrkID_H(Sagit,mrk_tmp(cpt,:),'off');
                 % Band dimension
-                [hb,~] = size(band);
+                [hb,~] =  size(band);
+                %[hb,~] =  10+size(band);
 
                 % 3.1' - If Band did not work - Select Marker Manually
                 if sum(mrk_eos3) == 0 % band did not work
-                    figure; 
+                    fig3 = figure(3);                             
+                    fig3.Position = [0 0.78*scr_size(4)  1.2*size(band,2) 3*size(band,1)]; 
                     imshow(band); title('Select Zone Around the Mrk');
                     % 3.1'.1 - Mrk Selection
                     [subBand,~,w2] = f_subIMG(band);
                     % 3.1'.2 -ID marker with Threshold
                     mrk_subBand = f_EOS_mrkID_subT(subBand,r_cut);
-                    mrk_band = [round(mrk_subBand(1) + w2) , round(mrk_subBand(2))];
-                    % 3.1'.4 -Mrk in EOS
-                    mrk_eos3 = [mrk_band(1) ,round((mrk_band(2) + mrk_tmp(cpt,2) - hb/2))];
-
+                   if size(subBand, 1) < 10  |    size (subBand, 2) < 10 % if the selection area is too small: avoid bug
+                   else
+                       mrk_band = [round(mrk_subBand(1) + w2) , round(mrk_subBand(2))];
+                       % 3.1'.4 -Mrk in EOS
+                       mrk_eos3 = [mrk_band(1) ,round((mrk_band(2) + mrk_tmp(cpt,2) - hb/2))];
+                   end
+                   
                 else % Band did work - mrk in local for visualisation
                     mrk_band = round( [mrk_eos3(1), mrk_eos3(2) - mrk_tmp(cpt,2) + hb /2 ]);
 
                 end
 
+                
                 % 3.2 - Check If marker ID is correct
-                figure; 
-                imshow(band); hold on;plot(mrk_band(:,1),mrk_band(:,2),'+r')
-                cond3 = questdlg('Was the marker identified properly?');
-                close
-                %
+                if size(subBand, 1) < 10  |    size (subBand, 2) < 10    % if the selection area is too small: avoid bug
+                    cond3 = 'No';
+                else
+                    fig3 = figure(3);                                                 
+                    fig3.Position = [0 0.78*scr_size(4)  1.2*size(band,2) 3*size(band,1)]; 
+                    imshow(band); hold on;plot(mrk_band(:,1),mrk_band(:,2),'+r')
+                    cond3 = questdlg('Was the marker identified properly?');
+                    close
+                end              
+                
                 if strcmp(cond3,'Yes') % marker identified on both views
                     % Get Position in EOS
                     x = mrk_tmp(cpt,1);
                     y = round((mrk_tmp(cpt,2) + mrk_eos3(2))/2);
                     z = round(mrk_eos3(1));
                     %
-                    mrk_eos(n_mrk+ cpt,:) = [x y z];
+                    mrk_eos(1,:) = [x y z];
+                    
+                elseif strcmp(cond3,'Cancel')                             
+                    
                 else % Band worked but did not get the right mrk 
-                    figure; 
-                    imshow(band); hold on;
-                     % Select zone around marker
-                     [subBand,~,w2] = f_subIMG(band);
-                     % 3.1'.2 - ID marker with Threshold
-                     mrk_subBand = f_EOS_mrkID_subT(subBand,r_cut);
-                     mrk_band = [round(mrk_subBand(1) + w2) , round(mrk_subBand(2))];
-                     % 3.1'.4 - Mrk in EOS
-                     mrk_eos3 = [mrk_band(1) ,round((mrk_band(2) + mrk_tmp(cpt,2) - hb/2))];
-                     plot(mrk_band(:,1),mrk_band(:,2),'+r')
-                     %
-                     cond4 = questdlg('Was the marker identified properly?');
-                     if strcmp(cond4,'Yes')
-                         close
-                         % Get Position in EOS
-                         x = mrk_tmp(cpt,1);
-                         y = round((mrk_tmp(cpt,2) + mrk_eos3(2))/2);
-                         z = round(mrk_eos3(1));
-                         mrk_eos(n_mrk+ cpt,:) = [x y z];
-                     end
+                    for j = 1:4             %enables 4 trials
+                        fig3 = figure(3);                    
+                        fig3.Position = [0 0.78*scr_size(4)  1.2*size(band,2) 3*size(band,1)]; 
+                        imshow(band); hold on;
+                        % Select zone around marker
+                        [subBand,~,w2] = f_subIMG(band);
+                        if size(subBand, 1) < 10  |    size (subBand, 2) < 10   % if the selection area is too small: avoid bug
+                        else
+                            % 3.1'.2 - ID marker with Threshold
+                            mrk_subBand = f_EOS_mrkID_subT(subBand,r_cut);
+                            if mrk_subBand ~= mrk_subBand
+                                break
+                            else
+                                mrk_band = [round(mrk_subBand(1) + w2), round(mrk_subBand(2))];
+                                % 3.1'.4 - Mrk in EOS
+                                mrk_eos3 = [mrk_band(1) ,round((mrk_band(2) + mrk_tmp(cpt,2) - hb/2))];
+                                plot(mrk_band(:,1),mrk_band(:,2),'+r')
+                                %
+                                cond4 = questdlg('Was the marker identified properly?');
+                                if strcmp(cond4,'Yes')
+                                    close
+                                    % Get Position in EOS
+                                    x = mrk_tmp(cpt,1);
+                                    y = round((mrk_tmp(cpt,2) + mrk_eos3(2))/2);
+                                    z = round(mrk_eos3(1));
+                                    mrk_eos(1,:) = [x y z];
+                                    break
+                                elseif strcmp(cond4,'Cancel')                          
+                                    break
+                                end
+                            end
+                        end
+                    end
                 end 
+                
                 % 3.3 - Update Figures & Table
                 % Update Figure: mrk ID
+                if isempty(mrk_eos(:,:)) 
+                else
                     figure(select_mrk.Number); hold on
                     plot(mrk_eos(end,1) + dx,mrk_eos(end,2),'*r')
                 % Update Figure GUI
                     axes(handles.axes3)      
-                    plot(mrk_eos(end,1),mrk_eos(end,2),'*c')
-                    plot(mrk_eos(end,3) + xdim,mrk_eos(end,2),'*c')
+                    plot(mrk_eos(end,1),mrk_eos(end,2),'co','MarkerSize',8);    
+                    plot(mrk_eos(end,3) + xdim, mrk_eos(end,2),'co','MarkerSize',8);
                 % Update Table
-                    mrk_eos_mm = mrk_eos * px2mm;
+                    mrk_eos_mm(n_mrk_previous + cpt, :) = mrk_eos(1, :) * px2mm;
                     set(handles.Table_SkinMrk,'Data',mrk_eos_mm);
-            end                 
-            cond1 = questdlg('Are there unidentified markers?');
-        
-        else % Not A new Marker
-            cond1 = questdlg({'Marker Already Identified';'';'Are there unidentified markers?'});
-            switch cond1
-                case 'No'
-                    close
-            end
+                    
+                    cpt = cpt +1;                    
+                end
+            end    
         end
+        
+            cond1 = questdlg('Add / Remove other markers?');
+            if strcmp(cond1,'No')   |  strcmp(cond1,'Cancel')
+  %??              close(fig1)
+                close(select_mrk)                
+            end
+            
+                                                                                        
     end
-else % Do Nothing
 
 end
-end
+
 
 %% Anatomical Points
-% --- Executes on button press in RightHip.
-function RightHip_Callback(hObject, eventdata, handles)
-% hObject    handle to RightHip (see GCBO)
+% --- Executes on button press in Right GH joint.
+function RightHip_Callback(hObject, eventdata, handles)                     %Hip or GH joint
+% hObject    handle to Right Hip / GH joint(see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Front Sagit AnatPt Info
-[r_HJC, r_R] = f_EOS_anatID_Hip_v3(Front,Sagit,'right');
+[r_HJC, r_R, y_hip_face] = f_EOS_anatID_Hip_v3(Front,Sagit,'right');
+
+
+% Clear Markers in Figure 
+axes(handles.axes3)
+h_tmp = findobj('type','line'); % Find Markers on plot        
+delete(h_tmp(:));               % Delete Markers on plot
 
 % Plot On fig
 xdim = size(Front,2);
 axes(handles.axes3); hold on
 trace_cercle(r_HJC(1),r_HJC(2),r_R,'c','-')
 trace_cercle(r_HJC(3)+xdim,r_HJC(2),r_R,'c','-')
+hold on; plot (r_HJC(1), y_hip_face, '.r')                                  %%AT : red point at the center of the 1st sphere fitting (frontal view) 
 
 % Put in Table
 px2mm = Info.Sagit.PixelSpacing (1);
@@ -362,14 +573,21 @@ AnatPt(1,1:4) = [r_HJC r_R] * px2mm;
 set(handles.Table_AnatPt,'Data',AnatPt);
 end
 
-% --- Executes on button press in LeftHip.
+
+% --- Executes on button press in Left Hip / GH joint.
 function LeftHip_Callback(hObject, eventdata, handles)
-% hObject    handle to LeftHip (see GCBO)
+% hObject    handle to Left GH joint (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Front Sagit AnatPt Info
 
 [l_HJC, l_R] = f_EOS_anatID_Hip_v3(Front,Sagit,'left');
+
+% Clear Markers in Figure 
+axes(handles.axes3)
+h_tmp = findobj('type','line'); % Find Markers on plot        
+delete(h_tmp(:));               % Delete Markers on plot
+
 % Plot On fig
 xdim = size(Front,2);
 axes(handles.axes3); hold on
@@ -382,160 +600,196 @@ AnatPt(2,1:4) = [l_HJC l_R] * px2mm;
 set(handles.Table_AnatPt,'Data',AnatPt);
 end
 
-% --- Executes on button press in RightKnee.
-% Knee algo was updated X.Gasparutto 2018
-function RightKnee_Callback(hObject, eventdata, handles)
-% hObject    handle to RightKnee (see GCBO)
+
+
+
+
+
+% --- Executes on button press in Vertebr_corner_1.                         
+function Vertebr_corner_1_Callback(hObject, eventdata, handles)
+% hObject    handle to Vertebr_corner_1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Front Sagit AnatPt Info
 
-[r_cM, r_rcM, r_cL, r_rcL] = f_EOS_anatID_Knee_v2(Front,Sagit,'right');
-
-% Plot on main figure
-axes(handles.axes3);hold on
-xdim = size(Front,2);
-% Frontal Plane
-trace_cercle(r_cM(1),r_cM(2),r_rcM,'y','-');
-trace_cercle(r_cL(1),r_cL(2),r_rcL,'g','-');
-% Sagittal Plane
-trace_cercle(r_cM(3)+xdim, r_cM(2),r_rcM,'y','-');
-trace_cercle(r_cL(3)+xdim, r_cL(2),r_rcL,'g','-');
-
-% Add to table
-px2mm = Info.Sagit.PixelSpacing (1);
-AnatPt(3,1:4) = [r_cM r_rcM] * px2mm;
-AnatPt(4,1:4) = [r_cL r_rcL] * px2mm;
-set(handles.Table_AnatPt,'Data',AnatPt);
+%vertebrae naming
+vertebrae_segment = 'C';
+vertebrae_n = 7;
+vertebrae_name = [];
+for i =  1:vertebrae_n 
+    vertebrae_name{i,1} = ['C', num2str(i),     '_upper'];   
 end
 
-% --- Executes on button press in LeftKnee.
-function LeftKnee_Callback(hObject, eventdata, handles)
-% hObject    handle to LeftKnee (see GCBO)
+
+[VerC] = f_EOS_anatID_Vert_corner(Sagit, vertebrae_name, vertebrae_segment, vertebrae_n);
+
+% Put in Table    
+px2mm = Info.Sagit.PixelSpacing (1);
+AnatPt(3:length(VerC) + 2, 1:4) = zeros(length(VerC), 4);
+AnatPt(3:length(VerC) + 2, 2:3) = [VerC(:,2) VerC(:,1)] * px2mm;
+set(handles.Table_AnatPt,'Data',AnatPt);
+
+% Plot fig
+xdim = size(Front,2);
+axes(handles.axes3); hold on
+% Plot anatomical points On fig
+plot (VerC(:,1) + xdim, VerC(:,2),'r.','MarkerSize', 5)  
+
+end
+
+
+
+% --- Executes on button press in Vertebr_corner_2.                          
+function Vertebr_corner_2_Callback(hObject, eventdata, handles)
+% hObject    handle to Vertebr_corner_2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global Front Sagit AnatPt Info
 
-[l_cM, l_rcM, l_cL, l_rcL] = f_EOS_anatID_Knee_v2(Front,Sagit,'left');
+%vertebrae naming
+vertebrae_segment = 'T';
+vertebrae_n = 12;
+vertebrae_name = [];
+for i =  1:vertebrae_n 
+    vertebrae_name{i,1} = ['T', num2str(i),     '_upper'];   
+end
 
-% Plot on main figure
-xdim = size(Front,2);
-axes(handles.axes3);hold on
-% Frontal Plane
-trace_cercle(l_cM(1),l_cM(2),l_rcM,'y','--');
-trace_cercle(l_cL(1),l_cL(2),l_rcL,'g','--');
-% Sagittal Plane
-trace_cercle(l_cM(3)+xdim,l_cM(2),l_rcM,'y','--');
-trace_cercle(l_cL(3)+xdim,l_cL(2),l_rcL,'g','--');
 
-% Add to table
+[VerC] = f_EOS_anatID_Vert_corner(Sagit, vertebrae_name, vertebrae_segment, vertebrae_n);
+
+% Put in Table    
 px2mm = Info.Sagit.PixelSpacing (1);
-AnatPt(5,1:4) = [l_cM l_rcM] * px2mm;
-AnatPt(6,1:4) = [l_cL l_rcL] * px2mm;
+AnatPt(10:length(VerC) + 9, 1:4) = zeros(length(VerC), 4);
+AnatPt(10:length(VerC) + 9, 2:3) = [VerC(:,2) VerC(:,1)] * px2mm;
 set(handles.Table_AnatPt,'Data',AnatPt);
+
+% Plot fig
+xdim = size(Front,2);
+axes(handles.axes3); hold on
+% Plot anatomical points On fig
+plot (VerC(:,1) + xdim, VerC(:,2),'g.','MarkerSize', 5)  
+
 end
 
-% --- Executes on button press in RASIS.
-function RASIS_Callback(hObject, eventdata, handles)
-% hObject    handle to RASIS (see GCBO)
+
+% --- Executes on button press in Vertebr_corner_3.                            
+function Vertebr_corner_3_Callback(hObject, eventdata, handles)
+% hObject    handle to Vertebr_corner_3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Front Sagit Info AnatPt
+global Front Sagit AnatPt Info
 
-% Where Anat Point identified?
-if isempty(handles.Table_AnatPt.Data) == 0
-    % Load Hips Position & put in pixels
-    mm2px = 1 / Info.Sagit.PixelSpacing (1);
-    HJC.R = handles.Table_AnatPt.Data(1,:) * mm2px;
-    HJC.L = handles.Table_AnatPt.Data(2,:) * mm2px;
-    
-    % Where Hip Identified? Need it for the lateral view
-    if (sum(HJC.R) == 0 || sum(HJC.L) == 0) == 0
-
-        [RASIS]= f_EOS_anatID_ASIS_v3(Front,Sagit,'right',HJC);
-        
-        % Plot on main figure
-        xdim = size(Front,2);
-        axes(handles.axes3);hold on
-        % Frontal Plane
-        plot(RASIS(1),RASIS(2),'vk','MarkerFaceColor',[255 255 0]/ 255)
-        % Sagittal Plane
-        plot(RASIS(3)+ xdim,RASIS(2),'vk','MarkerFaceColor',[255 255 0]/ 255)
-        % Add to table
-        px2mm = Info.Sagit.PixelSpacing (1);
-        AnatPt(8,1:3) = RASIS * px2mm;
-        set(handles.Table_AnatPt,'Data',AnatPt);
+%vertebrae naming
+vertebrae_segment = 'L';
+vertebrae_n = 6;
+vertebrae_name = [];
+for i =  1:vertebrae_n 
+    if i == 6
+        vertebrae_name{i,1} = ['S', num2str(i-5),     '_upper'];   
     else
-        msgbox('Identify Right and Left Hip Joint Centres First')
-
+        vertebrae_name{i,1} = ['L', num2str(i),     '_upper'];
     end
-else
-    msgbox('Identify Right and Left Hip Joint Centres First')
-end
-%
 end
 
-% --- Executes on button press in LASIS.
-function LASIS_Callback(hObject, eventdata, handles)
-% hObject    handle to LASIS (see GCBO)
+
+[VerC] = f_EOS_anatID_Vert_corner(Sagit, vertebrae_name, vertebrae_segment, vertebrae_n);
+
+% Put in Table    
+px2mm = Info.Sagit.PixelSpacing (1);
+AnatPt(22:length(VerC) + 21, 1:4) = zeros(length(VerC), 4);
+AnatPt(22:length(VerC) + 21, 2:3) = [VerC(:,2) VerC(:,1)] * px2mm;
+set(handles.Table_AnatPt,'Data',AnatPt);
+
+% Plot fig
+xdim = size(Front,2);
+axes(handles.axes3); hold on
+% Plot anatomical points On fig
+plot (VerC(:,1) + xdim, VerC(:,2),'r.','MarkerSize', 5)  
+end
+
+
+
+% --- Executes on button press in other_points.                            
+function other_points_Callback(hObject, eventdata, handles)
+% hObject    handle to other_points (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global Front Sagit Info AnatPt
+global Front Sagit AnatPt Info
 
-% Where Anat Points identified? 
-if isempty(handles.Table_AnatPt.Data) == 0
-    % Load Hips Position & put in pixels
-    mm2px = 1 / Info.Sagit.PixelSpacing (1);
-    HJC.R = handles.Table_AnatPt.Data(1,:) * mm2px;
-    HJC.L = handles.Table_AnatPt.Data(2,:) * mm2px;
-    % Where Hip Identified? Need it for the lateral view
-    if (sum(HJC.R) == 0 || sum(HJC.L) == 0) == 0
-
-        [LASIS]= f_EOS_anatID_ASIS_v3(Front,Sagit,'left',HJC);
-        
-    % Plot on main figure
-        xdim = size(Front,2);
-        axes(handles.axes3);hold on
-        % Frontal Plane
-        plot(LASIS(1),LASIS(2),'^k','MarkerFaceColor',[255 255 0]/ 255)
-        % Sagittal Plane
-        plot(LASIS(3)+ xdim,LASIS(2),'^k','MarkerFaceColor',[255 255 0]/ 255)
-    
-    % Add to table
-        px2mm = Info.Sagit.PixelSpacing (1);
-        AnatPt(9,1:3) = LASIS * px2mm;
-        set(handles.Table_AnatPt,'Data',AnatPt);    
-    else
-        msgbox('Identify Right and Left Hips First')
-    end
+%identifies were to place the new point coordinates in the table, each time
+%the "other points" button is pressed.
+if length(handles.Table_AnatPt.Data) > 27
+    indx = 1 + length(handles.Table_AnatPt.Data);
 else
-    msgbox('Identify Right and Left Hip Joint Centres First')
+    indx = 28;
 end
 
+marker_name = {};
+marker_name = inputdlg('marker name?');
+Mrk_names = handles.Table_AnatPt.RowName;
+if isempty(marker_name) 
+    return
 end
 
-% --- Executes on button press in PSymphysis.
-function PSymphysis_Callback(hObject, eventdata, handles)
-% hObject    handle to PSymphysis (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global Front Sagit Info AnatPt
+while length (marker_name{1}) ~= 0           %If no marker name: exit.
+    %require an adequat label
+    for mrk_i = 1:length(handles.Table_AnatPt.RowName)
+        if strcmp (marker_name, handles.Table_AnatPt.RowName(mrk_i))
+            marker_name = inputdlg('chose another marker name');
+            if  strcmp (marker_name, '')
+                return
+            elseif strcmp (marker_name, handles.Table_AnatPt.RowName(mrk_i))
+                return
+            end
+        end
+    end
+           
+    %Main fuction
+    [VerC] = f_EOS_anatID_Others(Sagit, Front);       
 
-% 1 - Identify PSYM
-[PSYM]=f_EOS_anatID_PSYM(Front,Sagit);
+    % Put in Table    
+    px2mm = Info.Sagit.PixelSpacing (1);
+    AnatPt(indx, 1:4) = zeros(1, 4);
+    AnatPt(indx, 1:3) = [VerC(:,1) VerC(:,2) VerC(:,3)] * px2mm;
+    Mrk_names(indx, 1) = marker_name;
+    set(handles.Table_AnatPt,'Data',AnatPt);
+    set(handles.Table_AnatPt,'RowName',Mrk_names);
 
-% 2 - Plot PSYM on main figure
+    % Plot fig
     xdim = size(Front,2);
-    axes(handles.axes3);hold on
-    % Frontal Plane
-    plot(PSYM(1),PSYM(2),'dk','MarkerFaceColor',[255 255 0]/ 255)
-    % Sagittal Plane
-    plot(PSYM(3)+ xdim,PSYM(2),'dk','MarkerFaceColor',[255 255 0]/ 255)
-% 3 - Write in Table 
-px2mm = Info.Sagit.PixelSpacing (1);
-AnatPt(7,1:3) = PSYM * px2mm;
-set(handles.Table_AnatPt,'Data',AnatPt);
+    axes(handles.axes3); hold on
+    % Plot anatomical points On fig
+    plot (VerC(1, 1), VerC(1, 2),'r.','MarkerSize', 5)  
+    plot (VerC(1, 3) + xdim, VerC(1, 2),'r.','MarkerSize', 5)  
+
+    indx = indx + 1   ;
+    marker_name = {};
+    marker_name = inputdlg('marker name?');
+    
+    %require an adequate label
+    if isempty(marker_name) | strcmp(marker_name, '') 
+        return
+    end
 end
+end
+
+
+
+% --- Executes on button press in clear_fig.
+function clear_fig_Callback(hObject, eventdata, handles)
+% hObject    handle to clear_fig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Front Sagit AnatPt Info
+
+% Clear Markers in Figure 
+axes(handles.axes3)
+h_tmp = findobj('type','line'); % Find Markers on plot        
+delete(h_tmp(:));               % Delete Markers on plot
+end
+
+
+
 
 %% Labelling Skin Markers
 % --- Executes on button press in Manual_Label.
@@ -547,35 +801,137 @@ function Manual_Label_Callback(hObject, eventdata, handles)
 global Front Info
 px2mm = Info.Sagit.PixelSpacing (1);
 % Get All points
+
 xyz = handles.Table_SkinMrk.Data;
-% Sort by height
-[~,id_x] = sort(xyz(:,2));
-xyz_s = xyz(id_x,:);
+% Remove empty raw AND sort by height
+xyz_NonEmpty = xyz(~all(xyz == 0, 2), :);
+[~,id_x] = sort(xyz_NonEmpty(:,2));
+xyz_s = xyz_NonEmpty(id_x,:);
 % Identify from top to bottom
-h = figure;
+h = figure(4);
+
 scr_size = get(groot,'ScreenSize');
-h.Position = [scr_size(3)/6 1 scr_size(3)/3 scr_size(4)/10*9];
+h.Position = [scr_size(3)/12 1 scr_size(3)/3 1];                             
 imshow(Front);hold on
+
 % add left & right
 text(10,100,'Right','Color','w','FontSize',14)
 text(size(Front,2)-10,100,'Left','Color','w','FontSize',14,'HorizontalAlignment','Right')
 % Put image on right part of screen
-plot(xyz_s(:,1)/px2mm,xyz_s(:,2)/px2mm,'r+')
 b = plot(xyz_s(1,1)/px2mm,xyz_s(1,2)/px2mm,'co');
-tmp = inputdlg('Name of marker?  ');
+
+SkinMrk = {'SkNA' 'SkOP' 'RSkM' 'LSkM' 'Jmen'...       
+    'Cer4' 'Cer5' 'Cer6' 'Cer7'   'NoMarker1'...  
+    'LAAc' 'RAAc' 'AcCl' 'aCM1' 'aCM2' 'TSca'...
+    'AInf' 'DELT' 'EpiL' 'EpiM'...
+    'InJU' 'StCL' 'MidS' 'PrXI'   'NoMarker2' ...
+    'Tho1' 'Tho2' 'Tho3' 'Tho4' 'Tho5' 'Tho6' 'Tho7' 'Tho8' 'Tho9' 'Tho10'...
+    'RASI' 'LASI' 'LPSI' 'RPSI'   'NoMarker3'...
+    'Add1' 'Add2' 'NoMarker'};
+      
+                           
+tmp = {1};
 C{1} = tmp{1};
-for i =2:size(xyz_s,1)
-    b.XData = xyz_s(i,1)/px2mm;
-    b.YData = xyz_s(i,2)/px2mm;
-    tmp = inputdlg('Name of marker?  ');
-    C{i} = tmp{1};
+ 
+%first half of the markers
+half = round(size(xyz_s,1)/2);
+correct = 'No';
+col ='g';
+Font = 'normal';
+delta_txt = 50;
+
+for essai =  1:2                                         
+    indx_ref = 1; 
+    if strcmp(correct, 'Yes')                                        
+        break
+    else
+        for i =1:half                                
+            b.XData = xyz_s(i,1)/px2mm;
+            b.YData = xyz_s(i,2)/px2mm;
+            
+            [indx,tf] = listdlg('ListString', SkinMrk, 'SelectionMode','single', 'InitialValue', indx_ref) ;      
+            tmp = SkinMrk(indx);                                                
+            for Sk_mrk_i = 1:length(C);
+                if strcmp (C{Sk_mrk_i}, cellstr(tmp))
+                    [indx,tf] = listdlg('ListString', SkinMrk, 'PromptString', 'Already chosen. Try another',...
+                        'SelectionMode','single', 'InitialValue', indx_ref) ;  
+                    tmp = SkinMrk(indx); 
+                end
+            end
+            
+            if isempty (tmp)
+                close
+                return
+            end
+            
+            C{i} = tmp{1};    
+            indx_ref = indx_ref  + 1;                                  
+            
+            %write the new label on the figure                        
+            text  (delta_txt +(xyz_s(i,1)/px2mm),  xyz_s(i,2)/px2mm, tmp, 'color', col, 'FontWeight', Font);
+            
+        end
+        if essai == 1
+            correct = questdlg('Is this1st part of the labelling correct?','');
+            col ='r'; Font = 'bold'; delta_txt = 150;
+        else
+        end
+    end
 end
-close
+
+
+%second half of the markers                                         
+% TO DO : prevent the use of labels already given in the first part 
+correct = 'No';
+col ='g';
+Font = 'normal';
+delta_txt = 50;
+for essai =  1:2                   
+    indx_ref = 1 + half; 
+    if strcmp(correct, 'Yes')    
+        break           
+    else
+        for i = 1+half : size(xyz_s,1)             
+            b.XData = xyz_s(i, 1)/px2mm;
+            b.YData = xyz_s(i, 2)/px2mm;
+      
+            [indx,tf] = listdlg('ListString', SkinMrk, 'SelectionMode','single', 'InitialValue', indx_ref) ;     
+            tmp = SkinMrk(indx);                                      
+            for Sk_mrk_i = 1:length(C);
+                if strcmp (C{Sk_mrk_i}, cellstr(tmp))
+                    [indx,tf] = listdlg('ListString', SkinMrk, 'PromptString', 'Already chosen. Try another',...
+                        'SelectionMode','single', 'InitialValue', indx_ref) ;  
+                    tmp = SkinMrk(indx); 
+                end
+            end
+            
+            if isempty (tmp)
+                break
+            end
+            
+            C{i} = tmp{1};
+            indx_ref = indx_ref  + 1;                                 
+            
+            %write the new label on the figure                       
+            text  (delta_txt +(xyz_s(i,1)/px2mm),  xyz_s(i,2)/px2mm, tmp, 'color', col, 'FontWeight', Font);            
+        end
+        if essai == 1
+            correct = questdlg('Is this 2nd part of the labelling correct?','');
+            col ='r'; Font = 'bold'; delta_txt = 150;
+        end
+    end
+end
+
 
 set(handles.Table_SkinMrk,'RowName',C)
 set(handles.Table_SkinMrk,'Data',xyz_s)
 
+close
 end
+
+
+
+
 
 %% EXPORT
 % --- Executes on button press in ExportMAT.
@@ -637,9 +993,9 @@ global dir_path files
     end
     % save data to directory of DICOM files
     if isempty(op)
-        out_name = [file_name,'_mrkEOS_',num2str(idx),'.csv'];
+        out_name = [file_name,'_mrkEOS_',num2str(idx)];              
     else
-        out_name = [file_name,'_mrkEOS_',op,'_',num2str(idx),'.csv'];       
+        out_name = [file_name,'_mrkEOS_',op,'_',num2str(idx)];         
     end
     
     if exist('SkinMrk','var')
@@ -709,7 +1065,7 @@ global dir_path files
     end
 
     % Export
-    if exist('X','var')
+    if exist('Y','var')
         T = table(X,Y,Z,R,'RowNames',row);
         % File Name - Work if EOS files are saved as 'project_number_visit_*' 
             tmp1 = files{1};
@@ -718,11 +1074,12 @@ global dir_path files
         file_name = tmp1(1:tmp2(3)-1); 
         % Is there an export file already?
         if isempty(op)
-            tmp3 = dir([dir_path,files{1}(1:8),'*.mat']);
+            tmp3 = dir([dir_path,files{1}(1:8),'*.csv']);
         else
-            tmp3 = dir([dir_path,files{1}(1:8),'*',op,'*.mat']);
+            tmp3 = dir([dir_path,files{1}(1:8),'*',op,'*.csv']);
         end
         %
+        
         if isempty(tmp3)
             idx = 1; 
         else
@@ -799,9 +1156,9 @@ global dir_path files
         file_name = [tmp1(1:tmp2(3)-1)]; 
         % Is there an export file already?
         if isempty(op)
-            tmp3 = dir([dir_path,files{1}(1:8),'*.mat']);
+            tmp3 = dir([dir_path,files{1}(1:8),'*.xls']);
         else
-            tmp3 = dir([dir_path,files{1}(1:8),'*',op,'*.mat']);
+            tmp3 = dir([dir_path,files{1}(1:8),'*',op,'*.xls']);
         end
         %
         if isempty(tmp3)
@@ -828,6 +1185,8 @@ global dir_path files
     end
 end
 
+
+
 %% LOAD (.mat, .csv, .xls)
 % --- Executes on button press in LoadProcessedData.
 function LoadProcessedData_Callback(hObject, eventdata, handles)
@@ -845,58 +1204,61 @@ switch ext
         csv = importdata([dir_path,file],',');
         % a - Anat Point
         % Index Anatomical Points 
-        idx_anat = find(strcmp(csv.textdata,'RHJC')) - 1;
+        idx_anat = find(strcmp(csv.textdata,'RGHj')) - 1;
         % Fill table
         if isempty(idx_anat) ~= 1
             set(handles.Table_AnatPt,'data',csv.data(idx_anat:end,:))
         end
         % b - Skin Markers
-        if isempty(idx_anat) ~=1 % are there anatomical points?
+        if idx_anat ~= 1 % are there anatomical points?
             set(handles.Table_SkinMrk,'data',csv.data(1:idx_anat-1,1:3))
             set(handles.Table_SkinMrk,'RowName',csv.textdata(2:idx_anat,1))
-        else
-            set(handles.Table_SkinMrk,'data',cav.data(1:end,1:3))
-            set(handles.Table_SkinMrk,'RowName',csv.textdata(2:end,1))
         end
         
     case 'mat'
+        SkinMrk = []; AnatPt = [];
         load([dir_path,file])
+        
         % Fill Tables
         % a - Skin Markers
-        f_sm = fieldnames(SkinMrk);
-        for i = 1:size(f_sm,1)
-            data_tmp(i,:) = SkinMrk.(f_sm{i});
-            row_tmp{i,:} = f_sm{i};
+        if isempty (SkinMrk)
+        else
+            f_sm = fieldnames(SkinMrk);                 
+            for i = 1:size(f_sm,1)
+                data_tmp(i,:) = SkinMrk.(f_sm{i});
+                row_tmp{i,:} = f_sm{i};
+            end
+            set(handles.Table_SkinMrk,'data',data_tmp)
+            set(handles.Table_SkinMrk,'RowName',row_tmp); clear *_tmp
         end
-        set(handles.Table_SkinMrk,'data',data_tmp)
-        set(handles.Table_SkinMrk,'RowName',row_tmp); clear *_tmp
 
         % b - Anat Point
-        f_ap = fieldnames(AnatPt);
-        for i = 1:size(f_ap,1)
-            data_tmp(i,:) = AnatPt.(f_ap{i});
-            row_tmp{i,:} = f_ap{i};
+        if isempty (AnatPt)
+        else
+            f_ap = fieldnames(AnatPt);
+            for i = 1:size(f_ap,1)
+                data_tmp(i,:) = AnatPt.(f_ap{i});
+                row_tmp{i,:} = f_ap{i};
+            end
+            set(handles.Table_AnatPt,'data',data_tmp)
+            set(handles.Table_AnatPt,'RowName',row_tmp)
         end
-        set(handles.Table_AnatPt,'data',data_tmp)
-        set(handles.Table_AnatPt,'RowName',row_tmp)
+        
         
     case 'xls'
         [NUM,TXT] = xlsread([dir_path,file]);
         % Fill Tables
         % a - Anat Point
         % Index Anatomical Points 
-        idx_anat = find(strcmp(TXT,'R_HJC')) - 1;
+        idx_anat = find(strcmp(TXT,'RGHj')) - 1;
         % Fill table
         if isempty(idx_anat) ~= 1 % are there anatomical points?
             set(handles.Table_AnatPt,'data',NUM(idx_anat:end,:))
         end
         % b - Skin Markers
-        if isempty(idx_anat) ~=1 % are there anatomical points?
+        if idx_anat ~= 1 % are there anatomical points?
             set(handles.Table_SkinMrk,'data',NUM(1:idx_anat-1,1:3))
             set(handles.Table_SkinMrk,'RowName',TXT(2:idx_anat,1))
-        else % no anatomical points
-            set(handles.Table_SkinMrk,'data',NUM(1:end,1:3))
-            set(handles.Table_SkinMrk,'RowName',TXT(2:end,1))
         end
 end
 
@@ -904,6 +1266,7 @@ end
 px2mm = Info.Sagit.PixelSpacing(1); % from EOS - check PixelSpacing
 xdim = size(Front,2);    % px size of frontal view
 axes(handles.axes3);hold on
+
 % - Anatomical points
 am = handles.Table_AnatPt.Data / px2mm;
 ar = handles.Table_AnatPt.RowName;
@@ -1078,28 +1441,6 @@ end
 end
 
 
-% --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu1
-end
-
-% --- Executes during object creation, after setting all properties.
-function popupmenu1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-end
 
 function Operator_Callback(hObject, eventdata, handles)
 % hObject    handle to Operator (see GCBO)
@@ -1121,4 +1462,17 @@ function Operator_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+end
+
+
+% --- Executes when entered data in editable cell(s) in Table_AnatPt.
+function Table_AnatPt_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to Table_AnatPt (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
 end
