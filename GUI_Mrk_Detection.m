@@ -48,6 +48,10 @@
 %                - 'Clear figure' button: clears all points plotted on figures.Data 
 %                        is kept in tables. 
 % -------------------------------------------------------------------------
+% tutorial
+%		A tutorial is available here: http://aurelie.tomezzoli.free.fr/EOS_Point_Extraction_TUTO.pptx 
+%
+% -------------------------------------------------------------------------
 
 
 function varargout = GUI_Mrk_Detection(varargin)
@@ -1200,7 +1204,7 @@ global Info Front
 ext = file(end-2:end);
 
 switch ext
-    case 'csv'
+    case 'csv'                                      %DO NOT WORK
         csv = importdata([dir_path,file],',');
         % a - Anat Point
         % Index Anatomical Points 

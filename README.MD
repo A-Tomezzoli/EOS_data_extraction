@@ -55,6 +55,10 @@ The proposed routine has been developed by <a href="https://www.unige.ch/medecin
 ## Examples
 A dataset is available as example in the following repository: <a href="https://doi.org/10.26037/yareta:md6wej4guvbufkqge322mqyu5i" target="_blank">doi:10.26037/yareta:md6wej4guvbufkqge322mqyu5i</a>
 
+##tutorial
+A tutorial is available here:
+http://aurelie.tomezzoli.free.fr/EOS_Point_Extraction_TUTO.pptx
+
 ## References
 <b><a href="https://doi.org/10.1371/journal.pone.0226648" target="_blank">Can the fusion of motion capture and 3D medical imaging reduce the extrinsic variability due to marker misplacements?</a></b><br>
 X. Gasparutto, J. Wegrzyk, K. Rose-Dulcina, D. Hannouche, S. Armand<br>
